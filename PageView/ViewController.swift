@@ -32,11 +32,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView1.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         tableView2.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
 
-        let items = [EAPageItem(title: "ПН", view: tableView),
-                     EAPageItem(title: "ВТ", view: tableView1),
-                     EAPageItem(title: "СР", view: tableView2)]
-
-        pageView = EAPageView(items: items)
+        pageView.add(item: EAPageItem(title: "ПН", view: tableView))
+        pageView.add(item: EAPageItem(title: "ВТ", view: tableView1))
+        pageView.add(item: EAPageItem(title: "СР", view: tableView2))
         view.addSubview(pageView)
     }
 

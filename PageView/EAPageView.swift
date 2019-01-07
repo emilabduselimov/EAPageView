@@ -10,13 +10,14 @@ import UIKit
 
 final class EAPageView: UIView, UIScrollViewDelegate {
 
+    private(set) var currentIndex = 0
+
     private var items: [EAPageItem] = []
 
-    private let indicatorHeight: CGFloat = 3
+    private let indicatorHeight: CGFloat = 4
     private let titleHeight: CGFloat = 60
 
     private var textLabels: [UILabel] = []
-    private var lastBounds: CGRect = .zero
 
     private lazy var indicator: UIView = {
         let view = UIView()
@@ -27,7 +28,7 @@ final class EAPageView: UIView, UIScrollViewDelegate {
 
     private lazy var titleScrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .black
+        scrollView.backgroundColor = .blue
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
         scrollView.alwaysBounceHorizontal = true
@@ -50,37 +51,44 @@ final class EAPageView: UIView, UIScrollViewDelegate {
 
     // MARK: - Initialization
 
-    convenience init(items: [EAPageItem]) {
-        self.init(frame: .zero)
-        self.items = items
-        configureView()
-    }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
+
+        configure()
     }
 
     required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: aDecoder)
+
+        configure()
+    }
+
+    func add(item: EAPageItem) {
+        let textLabel = UILabel()
+        textLabel.textColor = .white
+        textLabel.font = .boldSystemFont(ofSize: 15)
+        textLabel.textAlignment = .center
+        textLabel.text = item.title
+        textLabels.append(textLabel)
+        titleScrollView.addSubview(textLabel)
+        contentScrollView.addSubview(item.view)
+        items.append(item)
     }
 
     // MARK: - Configuration
 
-    private func configureView() {
+    private func configure() {
         addSubview(titleScrollView)
         addSubview(indicator)
         addSubview(contentScrollView)
 
-        items.forEach {
-            let textLabel = UILabel()
-            textLabel.textColor = .white
-            textLabel.font = .boldSystemFont(ofSize: 15)
-            textLabel.textAlignment = .center
-            textLabel.text = $0.title
-            textLabels.append(textLabel)
-            titleScrollView.addSubview(textLabel)
-            contentScrollView.addSubview($0.view)
-        }
+        /*
+        NSLayoutConstraint.activate([
+            titleScrollView.topAnchor.constraint(equalTo: topAnchor),
+            titleScrollView.heightAnchor.constraint(equalToConstant: titleHeight),
+            titleScrollView.leftAnchor.constraint(equalTo: leftAnchor),
+            titleScrollView.rightAnchor.constraint(equalTo: rightAnchor),
+        ])*/
     }
 
     // MARK: - Layout
@@ -88,10 +96,7 @@ final class EAPageView: UIView, UIScrollViewDelegate {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        titleScrollView.frame = CGRect(x: 0,
-                                       y: 0,
-                                       width: bounds.width,
-                                       height: titleHeight)
+        titleScrollView.frame = CGRect(origin: .zero, size: CGSize(width: bounds.width, height: titleHeight))
 
         contentScrollView.frame = CGRect(x: 0,
                                          y: titleScrollView.frame.maxY,
@@ -109,19 +114,15 @@ final class EAPageView: UIView, UIScrollViewDelegate {
 
     private func layoutContentSubviews() {
         for (index, item) in items.enumerated() {
-            let isViewVisible = lastBounds.origin.x == item.view.frame.origin.x
             item.view.frame = CGRect(x: CGFloat(index) * contentScrollView.frame.width,
                                      y: 0,
                                      width: contentScrollView.frame.width,
                                      height: contentScrollView.frame.height)
-            if isViewVisible {
-                contentScrollView.setContentOffset(item.view.frame.origin, animated: false)
-            }
         }
 
+        contentScrollView.contentOffset = CGPoint(x: CGFloat(currentIndex) * contentScrollView.frame.width, y: 0)
         contentScrollView.contentSize = CGSize(width: CGFloat(items.count) * contentScrollView.frame.width,
                                                height: contentScrollView.frame.height)
-        lastBounds = contentScrollView.bounds
     }
 
     private func layoutTextLabelSubviews() {
@@ -132,10 +133,8 @@ final class EAPageView: UIView, UIScrollViewDelegate {
                                 height: titleScrollView.frame.height)
         }
 
-        titleScrollView.contentInset = UIEdgeInsets(top: 0, left: bounds.width / 3, bottom: 0, right: 0)
-
-        titleScrollView.contentSize = CGSize(width: CGFloat(textLabels.count) * titleScrollView.frame.width / 3 + titleScrollView.contentInset.left,
-            height: titleScrollView.frame.height)
+        titleScrollView.contentInset.left = bounds.width / 3
+        titleScrollView.contentSize = CGSize(width: CGFloat(textLabels.count) * titleScrollView.frame.width / 3 + titleScrollView.contentInset.left, height: titleScrollView.frame.height)
 
         scrollTitleScrollView()
     }
@@ -153,7 +152,7 @@ final class EAPageView: UIView, UIScrollViewDelegate {
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        lastBounds = scrollView.bounds
+        currentIndex = Int(contentScrollView.contentOffset.x / contentScrollView.frame.width)
     }
 
 }
