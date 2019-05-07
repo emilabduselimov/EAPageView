@@ -15,9 +15,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     private let tableView = UITableView(frame: .zero)
     private let tableView1 = UITableView(frame: .zero)
     private let tableView2 = UITableView(frame: .zero)
+    private let tableView3 = UITableView(frame: .zero)
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        pageView.translatesAutoresizingMaskIntoConstraints = false
 
         tableView.delegate = self
         tableView.dataSource = self
@@ -28,19 +31,28 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView2.delegate = self
         tableView2.dataSource = self
 
+        tableView3.delegate = self
+        tableView3.dataSource = self
+
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         tableView1.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
         tableView2.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
+        tableView3.register(UITableViewCell.self, forCellReuseIdentifier: "cellID")
 
-        pageView.add(item: EAPageItem(title: "ПН", view: tableView))
-        pageView.add(item: EAPageItem(title: "ВТ", view: tableView1))
-        pageView.add(item: EAPageItem(title: "СР", view: tableView2))
+        tableView.tableFooterView = UIView()
+        tableView1.tableFooterView = UIView()
+        tableView2.tableFooterView = UIView()
+
+        pageView.add(item: EAPageItem(title: "Monday", view: tableView))
+        pageView.add(item: EAPageItem(title: "Tuesday", view: tableView1))
+        pageView.add(item: EAPageItem(title: "Wednesdayadfjlkjdalkdjsalkjsdl", view: tableView2))
+        pageView.add(item: EAPageItem(title: "Thursday", view: tableView3))
         view.addSubview(pageView)
-    }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        pageView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.height)
+        NSLayoutConstraint.activate([pageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                                     pageView.leftAnchor.constraint(equalTo: view.leftAnchor),
+                                     pageView.rightAnchor.constraint(equalTo: view.rightAnchor),
+                                     pageView.bottomAnchor.constraint(equalTo: view.bottomAnchor)])
     }
 
     // MARK: - UITableViewDataSource

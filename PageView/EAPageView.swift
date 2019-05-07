@@ -14,27 +14,30 @@ final class EAPageView: UIView, UIScrollViewDelegate {
 
     private var items: [EAPageItem] = []
 
-    private let indicatorHeight: CGFloat = 4
-    private let titleHeight: CGFloat = 60
+    private let indicatorViewHeight: CGFloat = 4
+    private let indicatorViewWidth: CGFloat = 120
+    private let titleHeight: CGFloat = 44
 
     private var textLabels: [UILabel] = []
 
-    private lazy var indicator: UIView = {
+    private lazy var indicatorView: UIView = {
         let view = UIView()
         view.backgroundColor = .white
-        view.layer.cornerRadius = indicatorHeight / 2
+        view.layer.cornerRadius = indicatorViewHeight / 2
+        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
 
     private lazy var titleScrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .blue
+        scrollView.backgroundColor = UIColor(red: 66 / 255, green: 134 / 255, blue: 244 / 255, alpha: 1)
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
         scrollView.alwaysBounceHorizontal = true
         scrollView.alwaysBounceVertical = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
 
@@ -46,6 +49,7 @@ final class EAPageView: UIView, UIScrollViewDelegate {
         scrollView.alwaysBounceVertical = false
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = true
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
 
@@ -55,12 +59,14 @@ final class EAPageView: UIView, UIScrollViewDelegate {
         super.init(frame: frame)
 
         configure()
+        configureLayout()
     }
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
 
         configure()
+        configureLayout()
     }
 
     func add(item: EAPageItem) {
@@ -79,16 +85,27 @@ final class EAPageView: UIView, UIScrollViewDelegate {
 
     private func configure() {
         addSubview(titleScrollView)
-        addSubview(indicator)
+        addSubview(indicatorView)
         addSubview(contentScrollView)
+    }
 
-        /*
+    // MARK: - Configure Layout
+
+    private func configureLayout() {
         NSLayoutConstraint.activate([
+            titleScrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            titleScrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             titleScrollView.topAnchor.constraint(equalTo: topAnchor),
             titleScrollView.heightAnchor.constraint(equalToConstant: titleHeight),
-            titleScrollView.leftAnchor.constraint(equalTo: leftAnchor),
-            titleScrollView.rightAnchor.constraint(equalTo: rightAnchor),
-        ])*/
+            contentScrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            contentScrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            contentScrollView.topAnchor.constraint(equalTo: titleScrollView.bottomAnchor),
+            contentScrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            indicatorView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            indicatorView.widthAnchor.constraint(equalToConstant: indicatorViewWidth),
+            indicatorView.heightAnchor.constraint(equalToConstant: indicatorViewHeight),
+            indicatorView.bottomAnchor.constraint(equalTo: titleScrollView.bottomAnchor)
+        ])
     }
 
     // MARK: - Layout
@@ -96,23 +113,11 @@ final class EAPageView: UIView, UIScrollViewDelegate {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        titleScrollView.frame = CGRect(origin: .zero, size: CGSize(width: bounds.width, height: titleHeight))
-
-        contentScrollView.frame = CGRect(x: 0,
-                                         y: titleScrollView.frame.maxY,
-                                         width: bounds.width,
-                                         height: bounds.height - titleHeight)
-
-        indicator.frame = CGRect(x: bounds.width / 3,
-                                 y: titleScrollView.frame.maxY - indicatorHeight,
-                                 width: bounds.width / 3,
-                                 height: indicatorHeight)
-
-        layoutContentSubviews()
-        layoutTextLabelSubviews()
+        layoutTitleScrollViewSubviews()
+        layoutContentScrollViewSubviews()
     }
 
-    private func layoutContentSubviews() {
+    private func layoutContentScrollViewSubviews() {
         for (index, item) in items.enumerated() {
             item.view.frame = CGRect(x: CGFloat(index) * contentScrollView.frame.width,
                                      y: 0,
@@ -125,7 +130,7 @@ final class EAPageView: UIView, UIScrollViewDelegate {
                                                height: contentScrollView.frame.height)
     }
 
-    private func layoutTextLabelSubviews() {
+    private func layoutTitleScrollViewSubviews() {
         for (index, view) in textLabels.enumerated() {
             view.frame = CGRect(x: CGFloat(index) * titleScrollView.frame.width / 3,
                                 y: 0,
@@ -134,7 +139,9 @@ final class EAPageView: UIView, UIScrollViewDelegate {
         }
 
         titleScrollView.contentInset.left = bounds.width / 3
-        titleScrollView.contentSize = CGSize(width: CGFloat(textLabels.count) * titleScrollView.frame.width / 3 + titleScrollView.contentInset.left, height: titleScrollView.frame.height)
+        let width = CGFloat(textLabels.count) * titleScrollView.frame.width / 3 + titleScrollView.contentInset.left
+        titleScrollView.contentSize = CGSize(width: width,
+                                             height: titleScrollView.frame.height)
 
         scrollTitleScrollView()
     }
